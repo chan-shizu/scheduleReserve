@@ -6,6 +6,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import jaLocale from "@fullcalendar/core/locales/ja"; // 追加
 import interactionPlugin from "@fullcalendar/interaction"; // needed for dayClick
 import { formatDate } from "/lib/formatDate";
+import { statusColorConfig } from "./const";
 
 export function Client({ schedules }) {
   const router = useRouter();
@@ -27,6 +28,8 @@ export function Client({ schedules }) {
       title: schedule.title,
       start: formatDate(schedule.date) + "T" + schedule.start_time,
       end: formatDate(schedule.date) + "T" + schedule.end_time,
+      backgroundColor: statusColorConfig[schedule.status],
+      borderColor: statusColorConfig[schedule.status],
     };
   });
 
