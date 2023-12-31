@@ -7,7 +7,7 @@ import jaLocale from "@fullcalendar/core/locales/ja"; // 追加
 import interactionPlugin from "@fullcalendar/interaction"; // needed for dayClick
 import { formatDate } from "/lib/formatDate";
 
-export function Client() {
+export function Client({ schedules }) {
   const router = useRouter();
 
   const handleDateClick = (arg) => {
@@ -15,6 +15,20 @@ export function Client() {
     const dateStr = formatDate(date);
     router.push(`/${dateStr}`);
   };
+
+  const handleEventClick = (arg) => {
+    const date = arg.event.start;
+    const dateStr = formatDate(date);
+    router.push(`/${dateStr}`);
+  };
+
+  const events = schedules.map((schedule) => {
+    return {
+      title: schedule.title,
+      start: formatDate(schedule.date) + "T" + schedule.start_time,
+      end: formatDate(schedule.date) + "T" + schedule.end_time,
+    };
+  });
 
   return (
     <div className="h-screen pt-5">
@@ -25,6 +39,8 @@ export function Client() {
         locale="ja" // 追加
         dateClick={handleDateClick}
         height={"100%"}
+        events={events}
+        eventClick={handleEventClick}
       />
     </div>
   );

@@ -1,9 +1,21 @@
 import { Client } from "./Client";
+import { sql } from "@vercel/postgres";
 
-export default function Home() {
+const fetchSchedules = async () => {
+  try {
+    const schedules = await sql`SELECT * FROM schedule;`;
+    return schedules;
+  } catch (error) {
+    console.log(error);
+    return { error: "error発生" };
+  }
+};
+
+export default async function Home() {
+  const schedules = await fetchSchedules();
   return (
     <main className="min-h-screen bg-white">
-      <Client />
+      <Client schedules={schedules.rows} />
     </main>
   );
 }
