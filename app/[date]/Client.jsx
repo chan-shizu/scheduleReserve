@@ -7,7 +7,7 @@ import jaLocale from "@fullcalendar/core/locales/ja"; // 追加
 import interactionPlugin from "@fullcalendar/interaction"; // needed for dayClick
 import { useState } from "react";
 import { Button } from "/components/Button";
-import { ScheduleDetailRow } from "/components/scheduleDetailRow";
+import { ScheduleDetailRow } from "/components/ScheduleDetailRow";
 
 export function Client({ date }) {
   const router = useRouter();
