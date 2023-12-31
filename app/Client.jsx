@@ -5,13 +5,12 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import jaLocale from "@fullcalendar/core/locales/ja"; // 追加
 import interactionPlugin from "@fullcalendar/interaction"; // needed for dayClick
-import { formatDate } from "@/lib/formatDate";
+import { formatDate } from "/lib/formatDate";
 
 export function Client() {
   const router = useRouter();
 
   const handleDateClick = (arg) => {
-    console.log(arg.date.getMonth());
     const date = arg.date;
     const dateStr = formatDate(date);
     router.push(`/${dateStr}`);
