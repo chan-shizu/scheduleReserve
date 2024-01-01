@@ -7,6 +7,7 @@ import jaLocale from "@fullcalendar/core/locales/ja"; // 追加
 import interactionPlugin from "@fullcalendar/interaction"; // needed for dayClick
 import { formatDate } from "/lib/formatDate";
 import { statusColorConfig } from "./const";
+import Loading from "./[date]/loading";
 
 export function Client({ schedules }) {
   const router = useRouter();

@@ -8,7 +8,7 @@ import jaLocale from "@fullcalendar/core/locales/ja";
 import interactionPlugin from "@fullcalendar/interaction";
 
 import { useForm, handleSubmit } from "react-hook-form";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { Button } from "/components/Button";
 import { ScheduleDetailRow } from "/components/ScheduleDetailRow";
 import { formatDate } from "/lib/formatDate";
@@ -16,6 +16,7 @@ import { statusColorConfig, statusConfig } from "../const";
 import { ErrorMessage } from "/components/ErrorMessage";
 import { postSchedule } from "/lib/postSchedule";
 import { fetchSchedulesByDate } from "/lib/fetchScheduleByDate";
+import Loading from "/app/loading";
 
 export function Client({ date, initialSchedules }) {
   const router = useRouter();
@@ -99,18 +100,20 @@ export function Client({ date, initialSchedules }) {
         </div>
       </div>
       <div className="h-[calc(100vh-168px)]">
-        <FullCalendar
-          plugins={[timeGridPlugin, interactionPlugin]}
-          initialView="timeGridDay"
-          locales={[jaLocale]} // 追加
-          locale="ja" // 追加
-          height={"100%"}
-          initialDate={date}
-          events={events}
-          eventClick={handleEventClick}
-          headerToolbar={false}
-          allDaySlot={false}
-        />
+        <Suspense fallback={<Loading />}>
+          <FullCalendar
+            plugins={[timeGridPlugin, interactionPlugin]}
+            initialView="timeGridDay"
+            locales={[jaLocale]} // 追加
+            locale="ja" // 追加
+            height={"100%"}
+            initialDate={date}
+            events={events}
+            eventClick={handleEventClick}
+            headerToolbar={false}
+            allDaySlot={false}
+          />
+        </Suspense>
       </div>
       <div className="sticky bottom-0 bg-white py-4 flex justify-center z-10 px-5 gap-x-4">
         <Button onClick={handleOnBackButton} text="一覧画面に戻る" type="sub" />
