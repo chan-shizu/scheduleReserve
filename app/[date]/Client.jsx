@@ -128,6 +128,7 @@ export function Client({ date, initialSchedules }) {
           >
             <h1 className="text-3xl mx-auto py-4 text-center">
               スケジュール登録
+              <span className=" text-xl">({date})</span>
             </h1>
             <div className="px-4 py-3">
               <div>
