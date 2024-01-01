@@ -27,6 +27,7 @@ export function Client({ date, initialSchedules }) {
     handleSubmit,
     getValues,
     formState: { errors },
+    reset,
   } = useForm();
 
   const handleEventClick = (arg) => {
@@ -47,6 +48,7 @@ export function Client({ date, initialSchedules }) {
     const updatedSchedules = await fetchSchedulesByDate(date);
     if (updatedSchedules.error) return;
     setSchedules(await updatedSchedules.rows);
+    reset();
   };
 
   const handleOnBackButton = () => {
@@ -88,8 +90,13 @@ export function Client({ date, initialSchedules }) {
 
   return (
     <div className="h-full">
-      <div className="flex justify-center">
+      <div className="flex justify-center relative">
         <h1 className="text-center text-4xl py-4">{date}</h1>
+        <div className="pl-3 absolute top-2 right-5 text-sm">
+          <p className="text-[#87ceeb]">確認中</p>
+          <p className="text-[#00ff7f]">承認</p>
+          <p className="text-[#ffa500]">却下</p>
+        </div>
       </div>
       <div className="h-[calc(100vh-168px)]">
         <FullCalendar
