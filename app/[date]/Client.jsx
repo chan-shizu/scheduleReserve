@@ -22,8 +22,6 @@ export function Client({ date, initialSchedules }) {
   const [showModal, setShowModal] = useState(-1);
   const [selectedEventId, setSelectedEventId] = useState(-1);
   const [schedules, setSchedules] = useState(initialSchedules);
-  const [errorText, setErrorText] = useState("");
-
   const {
     register,
     handleSubmit,
@@ -51,6 +49,11 @@ export function Client({ date, initialSchedules }) {
     setSchedules(await updatedSchedules.rows);
   };
 
+  const handleOnBackButton = () => {
+    router.push("/");
+    router.refresh();
+  };
+
   const events = Array.isArray(schedules)
     ? schedules.map((schedule) => {
         return {
@@ -67,6 +70,21 @@ export function Client({ date, initialSchedules }) {
   const selectedEvent =
     Array.isArray(schedules) &&
     schedules.find((schedule) => schedule.schedule_id == selectedEventId);
+
+  let selectedEventOptionText = "";
+  if (selectedEvent) {
+    if (selectedEvent.option_high_tension)
+      selectedEventOptionText += "ハイテンション、";
+    if (selectedEvent.option_room) selectedEventOptionText += "部屋使用、";
+    if (selectedEvent.option_fashionable)
+      selectedEventOptionText += "とびきりのオシャレ、";
+    if (selectedEvent.option_car) selectedEventOptionText += "車運転、";
+    if (selectedEvent.option_guitar) selectedEventOptionText += "ギター演奏、";
+    if (selectedEvent.option_kindness)
+      selectedEventOptionText += "とびきりの優しさ、";
+    if (selectedEventOptionText.slice(-1) == "、")
+      selectedEventOptionText = selectedEventOptionText.slice(0, -1);
+  }
 
   return (
     <div className="h-full">
@@ -88,94 +106,176 @@ export function Client({ date, initialSchedules }) {
         />
       </div>
       <div className="sticky bottom-0 bg-white py-4 flex justify-center z-10 px-5 gap-x-4">
-        <Button
-          onClick={() => router.push("/")}
-          text="一覧画面に戻る"
-          type="sub"
-        />
+        <Button onClick={handleOnBackButton} text="一覧画面に戻る" type="sub" />
         <Button onClick={() => setShowModal(1)} text=" スケジュール追加" />
       </div>
 
       {showModal == 1 && (
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="bg-white fixed h-full w-full top-0 left-0 z-20 overflow-y-scroll"
-        >
-          <div className="px-4 py-3">
-            <div>
-              <label className="block">タイトル</label>
+        <>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="bg-white fixed h-full w-full top-0 left-0 z-20 overflow-y-scroll"
+          >
+            <h1 className="text-3xl mx-auto py-4 text-center">
+              スケジュール登録
+            </h1>
+            <div className="px-4 py-3">
+              <div>
+                <label className="text-xl" htmlFor="title">
+                  タイトル
+                </label>
+                <input
+                  id="title"
+                  className="border-2 rounded-lg w-full mt-2 h-10"
+                  {...register("title", {
+                    required: "タイトルは必須です",
+                  })}
+                />
+                {errors.title && <ErrorMessage text={errors.title.message} />}
+              </div>
+            </div>
+            <div className="px-4 py-3">
+              <label className="text-xl" htmlFor="name">
+                登録者名(僕に伝わる名前で！匿名なら後でDMかなんかで連絡ください！)
+              </label>
               <input
+                id="name"
                 className="border-2 rounded-lg w-full mt-2 h-10"
-                {...register("title", {
-                  required: "タイトルは必須です",
+                {...register("name", {
+                  required: "登録者名は必須です",
                 })}
               />
-              {errors.title && <ErrorMessage text={errors.title.message} />}
+              {errors.name && <ErrorMessage text={errors.name.message} />}
             </div>
-          </div>
-          <div className="px-4 py-3">
-            <label>
-              登録者名(僕に伝わる名前で！匿名なら後でDMかなんかで連絡ください！)
-            </label>
-            <input
-              className="border-2 rounded-lg w-full mt-2 h-10"
-              {...register("name", {
-                required: "登録者名は必須です",
-              })}
-            />
-            {errors.name && <ErrorMessage text={errors.name.message} />}
-          </div>
-          <div className="px-4 py-3">
-            <label>開始時間</label>
-            <input
-              className="border-2 rounded-lg w-full mt-2 h-10"
-              type="time"
-              {...register("startTime", {
-                required: "開始時間は必須です",
-              })}
-            />
-            {errors.startTime && (
-              <ErrorMessage text={errors.startTime.message} />
-            )}
-          </div>
-          <div className="px-4 py-3">
-            <label>終了時間</label>
-            <input
-              className="border-2 rounded-lg w-full mt-2 h-10"
-              type="time"
-              {...register("endTime", {
-                required: "終了時間は必須です",
-                validate: {
-                  message: (value) =>
-                    value > getValues("startTime")
-                      ? null
-                      : "終了時刻は開始時刻の後にしてください",
-                },
-              })}
-            />
-            {errors.endTime && <ErrorMessage text={errors.endTime.message} />}
-          </div>
-          <div className="px-4 py-3">
-            <label>詳細</label>
-            <input
-              className="border-2 rounded-lg w-full mt-2 h-10"
-              type="text"
-              {...register("description", {
-                required: "何か一言！",
-              })}
-            />
-            {errors.description && (
-              <ErrorMessage text={errors.description.message} />
-            )}
-          </div>
-          <div className="py-4 flex justify-center px-5 gap-x-4">
-            <Button onClick={closeModal} type="sub" />
-            <input
-              className="bg-red-400 py-5 w-full rounded-full"
-              type="submit"
-            />
-          </div>
-        </form>
+            <div className="px-4 py-3">
+              <label className="text-xl" htmlFor="startTime">
+                開始時間
+              </label>
+              <input
+                id="startTime"
+                className="border-2 rounded-lg w-full mt-2 h-10"
+                type="time"
+                {...register("startTime", {
+                  required: "開始時間は必須です",
+                })}
+              />
+              {errors.startTime && (
+                <ErrorMessage text={errors.startTime.message} />
+              )}
+            </div>
+            <div className="px-4 py-3">
+              <label className="text-xl" htmlFor="endTime">
+                終了時間
+              </label>
+              <input
+                id="endTime"
+                className="border-2 rounded-lg w-full mt-2 h-10"
+                type="time"
+                {...register("endTime", {
+                  required: "終了時間は必須です",
+                  validate: {
+                    message: (value) =>
+                      value > getValues("startTime")
+                        ? null
+                        : "終了時刻は開始時刻の後にしてください",
+                  },
+                })}
+              />
+              {errors.endTime && <ErrorMessage text={errors.endTime.message} />}
+            </div>
+            <div className="px-4 py-3 w-full">
+              <p className="text-xl">オプション</p>
+              <div className="flex flex-wrap mt-3 w-full gap-y-4">
+                <div className="flex align-middle justify-between w-1/2 gap-x-1 pr-4">
+                  <label className="my-auto" htmlFor="optionHighTension">
+                    ハイテンション
+                  </label>
+                  <input
+                    className="h-5 w-5 my-auto"
+                    id="optionHighTension"
+                    type="checkbox"
+                    {...register("optionHighTension", {})}
+                  />
+                </div>
+                <div className="flex align-middle justify-between w-1/2 gap-x-1 pr-4">
+                  <label className="my-auto" htmlFor="optionRoom">
+                    部屋使用
+                  </label>
+                  <input
+                    className="h-5 w-5 my-auto"
+                    id="option_room"
+                    type="checkbox"
+                    {...register("optionRoom", {})}
+                  />
+                </div>
+                <div className="flex align-middle justify-between w-1/2 gap-x-1 pr-4">
+                  <label className="my-auto" htmlFor="optionFashionable">
+                    とびきりのオシャレ
+                  </label>
+                  <input
+                    className="h-5 w-5 my-auto"
+                    id="optionFashionable"
+                    type="checkbox"
+                    {...register("optionFashionable", {})}
+                  />
+                </div>
+                <div className="flex align-middle justify-between w-1/2 gap-x-1 pr-4">
+                  <label className="my-auto" htmlFor="optionCar">
+                    車運転
+                  </label>
+                  <input
+                    className="h-5 w-5 my-auto"
+                    id="optionCar"
+                    type="checkbox"
+                    {...register("optionCar", {})}
+                  />
+                </div>
+                <div className="flex align-middle justify-between w-1/2 gap-x-1 pr-4">
+                  <label className="my-auto" htmlFor="optionGuitar">
+                    ギター演奏
+                  </label>
+                  <input
+                    className="h-5 w-5 my-auto"
+                    id="optionGuitar"
+                    type="checkbox"
+                    {...register("optionGuitar", {})}
+                  />
+                </div>
+                <div className="flex align-middle justify-between w-1/2 gap-x-1 pr-4">
+                  <label className="my-auto" htmlFor="optionKindness">
+                    とびきりの優しさ
+                  </label>
+                  <input
+                    className="h-5 w-5 my-auto"
+                    id="optionKindness"
+                    type="checkbox"
+                    {...register("optionKindness", {})}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="px-4 py-3">
+              <label className="text-xl">詳細</label>
+              <input
+                className="border-2 rounded-lg w-full mt-2 h-10"
+                type="text"
+                {...register("description", {
+                  required: "何か一言！",
+                })}
+              />
+              {errors.description && (
+                <ErrorMessage text={errors.description.message} />
+              )}
+            </div>
+            <div className="py-4 flex justify-center px-5 gap-x-4">
+              <Button onClick={closeModal} type="sub" />
+              <input
+                className="bg-red-400 py-5 w-full rounded-full"
+                type="submit"
+              />
+            </div>
+          </form>
+        </>
       )}
 
       {showModal == 2 && (
@@ -188,10 +288,26 @@ export function Client({ date, initialSchedules }) {
               text={selectedEvent.start_time}
             />
             <ScheduleDetailRow name="終了時間" text={selectedEvent.end_time} />
+            <ScheduleDetailRow
+              name="オプション"
+              text={
+                selectedEventOptionText == ""
+                  ? "オプションなし"
+                  : selectedEventOptionText
+              }
+            />
             <ScheduleDetailRow name="詳細" text={selectedEvent.description} />
             <ScheduleDetailRow
-              name="返事"
+              name="ステータス"
               text={statusConfig[selectedEvent.status]}
+            />
+            <ScheduleDetailRow
+              name="コメント"
+              text={
+                selectedEvent.comment
+                  ? selectedEvent.comment
+                  : "まだコメントがないです。ちょっと待ってて"
+              }
             />
           </div>
           <div className="bg-white py-4 flex justify-center mt-4">
