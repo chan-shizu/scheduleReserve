@@ -1,20 +1,35 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import jaLocale from "@fullcalendar/core/locales/ja"; // 追加
-import interactionPlugin from "@fullcalendar/interaction"; // needed for dayClick
+import jaLocale from "@fullcalendar/core/locales/ja";
+import interactionPlugin from "@fullcalendar/interaction";
+
+import { useForm, handleSubmit } from "react-hook-form";
 import { useState } from "react";
 import { Button } from "/components/Button";
 import { ScheduleDetailRow } from "/components/ScheduleDetailRow";
 import { formatDate } from "/lib/formatDate";
 import { statusColorConfig, statusConfig } from "../const";
+import { ErrorMessage } from "/components/ErrorMessage";
+import { postSchedule } from "/lib/postSchedule";
+import { fetchSchedulesByDate } from "/lib/fetchScheduleByDate";
 
-export function Client({ date, schedules }) {
+export function Client({ date, initialSchedules }) {
   const router = useRouter();
-  const [showModal, setShowModal] = useState(0);
+  const [showModal, setShowModal] = useState(-1);
   const [selectedEventId, setSelectedEventId] = useState(-1);
+  const [schedules, setSchedules] = useState(initialSchedules);
+  const [errorText, setErrorText] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    getValues,
+    formState: { errors },
+  } = useForm();
 
   const handleEventClick = (arg) => {
     const id = arg.event.id;
@@ -26,39 +41,52 @@ export function Client({ date, schedules }) {
     setShowModal(0);
   };
 
-  const events = schedules.map((schedule) => {
-    return {
-      id: schedule.schedule_id,
-      title: schedule.title,
-      start: formatDate(schedule.date) + "T" + schedule.start_time,
-      end: formatDate(schedule.date) + "T" + schedule.end_time,
-      backgroundColor: statusColorConfig[schedule.status],
-      borderColor: statusColorConfig[schedule.status],
-    };
-  });
+  const onSubmit = async (data) => {
+    setShowModal(-1);
+    const scheduleBody = { ...data, date: date };
+    const error = await postSchedule(scheduleBody);
+    if (error) return;
+    const updatedSchedules = await fetchSchedulesByDate(date);
+    if (updatedSchedules.error) return;
+    setSchedules(await updatedSchedules.rows);
+  };
 
-  console.log(events);
+  const events = Array.isArray(schedules)
+    ? schedules.map((schedule) => {
+        return {
+          id: schedule.schedule_id,
+          title: schedule.title,
+          start: formatDate(schedule.date) + "T" + schedule.start_time,
+          end: formatDate(schedule.date) + "T" + schedule.end_time,
+          backgroundColor: statusColorConfig[schedule.status],
+          borderColor: statusColorConfig[schedule.status],
+        };
+      })
+    : [];
 
-  const selectedEvent = schedules.find(
-    (schedule) => schedule.schedule_id == selectedEventId
-  );
+  const selectedEvent =
+    Array.isArray(schedules) &&
+    schedules.find((schedule) => schedule.schedule_id == selectedEventId);
 
   return (
-    <div className="h-screen">
+    <div className="h-full">
       <div className="flex justify-center">
         <h1 className="text-center text-4xl py-4">{date}</h1>
       </div>
-      <FullCalendar
-        plugins={[timeGridPlugin, interactionPlugin]}
-        initialView="timeGridDay"
-        locales={[jaLocale]} // 追加
-        locale="ja" // 追加
-        height={"100%"}
-        initialDate={date}
-        events={events}
-        eventClick={handleEventClick}
-        headerToolbar={false}
-      />
+      <div className="h-[calc(100vh-168px)]">
+        <FullCalendar
+          plugins={[timeGridPlugin, interactionPlugin]}
+          initialView="timeGridDay"
+          locales={[jaLocale]} // 追加
+          locale="ja" // 追加
+          height={"100%"}
+          initialDate={date}
+          events={events}
+          eventClick={handleEventClick}
+          headerToolbar={false}
+          allDaySlot={false}
+        />
+      </div>
       <div className="sticky bottom-0 bg-white py-4 flex justify-center z-10 px-5 gap-x-4">
         <Button
           onClick={() => router.push("/")}
@@ -67,15 +95,91 @@ export function Client({ date, schedules }) {
         />
         <Button onClick={() => setShowModal(1)} text=" スケジュール追加" />
       </div>
+
       {showModal == 1 && (
-        <div className="bg-white fixed h-full w-full top-0 left-0 z-20">
-          <div className="py-4 flex justify-center px-5">
-            <Button onClick={closeModal} />
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="bg-white fixed h-full w-full top-0 left-0 z-20 overflow-y-scroll"
+        >
+          <div className="px-4 py-3">
+            <div>
+              <label className="block">タイトル</label>
+              <input
+                className="border-2 rounded-lg w-full mt-2 h-10"
+                {...register("title", {
+                  required: "タイトルは必須です",
+                })}
+              />
+              {errors.title && <ErrorMessage text={errors.title.message} />}
+            </div>
           </div>
-        </div>
+          <div className="px-4 py-3">
+            <label>
+              登録者名(僕に伝わる名前で！匿名なら後でDMかなんかで連絡ください！)
+            </label>
+            <input
+              className="border-2 rounded-lg w-full mt-2 h-10"
+              {...register("name", {
+                required: "登録者名は必須です",
+              })}
+            />
+            {errors.name && <ErrorMessage text={errors.name.message} />}
+          </div>
+          <div className="px-4 py-3">
+            <label>開始時間</label>
+            <input
+              className="border-2 rounded-lg w-full mt-2 h-10"
+              type="time"
+              {...register("startTime", {
+                required: "開始時間は必須です",
+              })}
+            />
+            {errors.startTime && (
+              <ErrorMessage text={errors.startTime.message} />
+            )}
+          </div>
+          <div className="px-4 py-3">
+            <label>終了時間</label>
+            <input
+              className="border-2 rounded-lg w-full mt-2 h-10"
+              type="time"
+              {...register("endTime", {
+                required: "終了時間は必須です",
+                validate: {
+                  message: (value) =>
+                    value > getValues("startTime")
+                      ? null
+                      : "終了時刻は開始時刻の後にしてください",
+                },
+              })}
+            />
+            {errors.endTime && <ErrorMessage text={errors.endTime.message} />}
+          </div>
+          <div className="px-4 py-3">
+            <label>詳細</label>
+            <input
+              className="border-2 rounded-lg w-full mt-2 h-10"
+              type="text"
+              {...register("description", {
+                required: "何か一言！",
+              })}
+            />
+            {errors.description && (
+              <ErrorMessage text={errors.description.message} />
+            )}
+          </div>
+          <div className="py-4 flex justify-center px-5 gap-x-4">
+            <Button onClick={closeModal} type="sub" />
+            <input
+              className="bg-red-400 py-5 w-full rounded-full"
+              type="submit"
+            />
+          </div>
+        </form>
       )}
+
       {showModal == 2 && (
-        <div className="bg-white fixed h-full w-full top-0 left-0 z-20 px-5 pt-8 pb-5 ">
+        <div className="bg-white fixed h-full w-full top-0 left-0 z-20 px-5 pt-8 pb-5 overflow-y-scroll">
           <h2 className="text-5xl text-center">{selectedEvent.title}</h2>
           <div className="flex flex-col mt-6 divide-y-2 border-y-2">
             <ScheduleDetailRow name="登録者" text={selectedEvent.name} />
