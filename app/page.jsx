@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { Client } from "./Client";
 import { sql } from "@vercel/postgres";
 
