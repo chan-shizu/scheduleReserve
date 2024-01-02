@@ -126,13 +126,13 @@ export function Client({ date, initialSchedules }) {
             onSubmit={handleSubmit(onSubmit)}
             className="bg-white fixed h-full w-full top-0 left-0 z-20 overflow-y-scroll"
           >
-            <h1 className="text-3xl mx-auto py-4 text-center">
+            <h1 className="text-3xl mx-auto py-4 text-center px-4">
               スケジュール登録
-              <span className=" text-xl">({date})</span>
+              <span className="text-xl">({date})</span>
             </h1>
             <div className="px-4 py-3">
               <div>
-                <label className="text-xl" htmlFor="title">
+                <label className="font-semibold text-lg" htmlFor="title">
                   タイトル
                 </label>
                 <input
@@ -146,8 +146,12 @@ export function Client({ date, initialSchedules }) {
               </div>
             </div>
             <div className="px-4 py-3">
-              <label className="text-xl" htmlFor="name">
-                登録者名(僕に伝わる名前で！匿名なら後でDMかなんかで連絡ください！)
+              <label className="font-semibold text-lg" htmlFor="name">
+                登録者名
+                <br />
+                <span className="text-sm font-normal">
+                  (僕に伝わる名前で！匿名なら後でDMかなんかで連絡ください！)
+                </span>
               </label>
               <input
                 id="name"
@@ -159,7 +163,7 @@ export function Client({ date, initialSchedules }) {
               {errors.name && <ErrorMessage text={errors.name.message} />}
             </div>
             <div className="px-4 py-3">
-              <label className="text-xl" htmlFor="startTime">
+              <label className="font-semibold text-lg" htmlFor="startTime">
                 開始時間
               </label>
               <input
@@ -175,7 +179,7 @@ export function Client({ date, initialSchedules }) {
               )}
             </div>
             <div className="px-4 py-3">
-              <label className="text-xl" htmlFor="endTime">
+              <label className="font-semibold text-lg" htmlFor="endTime">
                 終了時間
               </label>
               <input
@@ -195,8 +199,8 @@ export function Client({ date, initialSchedules }) {
               {errors.endTime && <ErrorMessage text={errors.endTime.message} />}
             </div>
             <div className="px-4 py-3 w-full">
-              <p className="text-xl">オプション</p>
-              <div className="flex flex-wrap mt-3 w-full gap-y-4">
+              <p className="font-semibold text-lg">オプション</p>
+              <div className="flex flex-wrap mt-2 w-full gap-y-2">
                 <div className="flex align-middle justify-between w-1/2 gap-x-1 pr-4">
                   <label className="my-auto" htmlFor="optionHighTension">
                     ハイテンション
@@ -266,7 +270,13 @@ export function Client({ date, initialSchedules }) {
               </div>
             </div>
             <div className="px-4 py-3">
-              <label className="text-xl">詳細</label>
+              <label className="font-semibold text-lg">
+                詳細
+                <br />
+                <span className="text-sm font-normal">
+                  (やりたいこと、補足事項、希望のオプションなどあれば！)
+                </span>
+              </label>
               <input
                 className="border-2 rounded-lg w-full mt-2 h-10"
                 type="text"
@@ -314,11 +324,7 @@ export function Client({ date, initialSchedules }) {
             />
             <ScheduleDetailRow
               name="コメント"
-              text={
-                selectedEvent.comment
-                  ? selectedEvent.comment
-                  : "まだコメントがないです。ちょっと待ってて"
-              }
+              text={selectedEvent.comment ? selectedEvent.comment : "　"}
             />
           </div>
           <div className="bg-white py-4 flex justify-center mt-4">

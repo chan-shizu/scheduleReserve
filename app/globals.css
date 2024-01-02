@@ -25,3 +25,8 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+
+.fc .fc-toolbar {
+  justify-content: center;
+  gap: 8px;
+}
